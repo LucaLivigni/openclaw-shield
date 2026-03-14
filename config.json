@@ -1,0 +1,29 @@
+{
+  "firewall": {
+    "banned_patterns": [
+      "rm\\s+-rf\\s+/", "sudo", "mkfs", "dd\\s+if=", ">\\s*/dev/", "shutdown", "reboot"
+    ],
+    "forbidden_paths": [
+      "\\.ssh", "\\.aws", "\\.env", "\\.bash_history", "/etc/passwd", "keychain", "Cookies"
+    ],
+    "sensitive_patterns": [
+      "rm\\s+", "kill\\s+", "curl\\s+.*\\s*\\|\\s*sh", "wget\\s+.*\\s*\\|\\s*sh", "chmod", "chown", "npm\\s+publish"
+    ]
+  },
+  "agents": {
+    "dev": {
+      "terminal": "RESTRICTED",
+      "filesystem": "WORKSPACE_ONLY",
+      "network": "ALLOWED",
+      "approval_required": true,
+      "browser": true
+    },
+    "trader": {
+      "terminal": "BLOCKED",
+      "filesystem": "NONE",
+      "network": "ALLOWED",
+      "approval_required": false,
+      "browser": false
+    }
+  }
+}

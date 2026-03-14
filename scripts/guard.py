@@ -1,66 +1,79 @@
-import sys
+#!/usr/bin/env python3
+"""
+OpenClaw Shield - Modular Firewall
+Validates commands against configurable security policies.
+"""
+
+import json
 import re
+import sys
+from pathlib import Path
+from typing import Tuple, List, Dict, Any
 
-# --- CONFIGURATION ---
-# List of banned commands or patterns
-BANNED_PATTERNS = [
-    r'rm\s+-rf\s+/',      # Dangerous delete
-    r'sudo',              # Admin elevation
-    r'mkfs',              # Format disk
-    r'dd\s+if=',          # Raw disk access
-    r'>\s*/dev/',         # Writing to devices
-    r'shutdown',          # System shutdown
-    r'reboot'             # System reboot
-]
+class FirewallGuard:
+    def __init__(self, config_path: str = "config.json"):
+        self.config_path = Path(config_path)
+        self.config = self._load_config()
+        self.banned = self.config.get("firewall", {}).get("banned_patterns", [])
+        self.forbidden = self.config.get("firewall", {}).get("forbidden_paths", [])
+        self.sensitive = self.config.get("firewall", {}).get("sensitive_patterns", [])
 
-# Privacy Shield: Paths that agents should NEVER read or write
-FORBIDDEN_PATHS = [
-    r'\.ssh',             # SSH keys
-    r'\.aws',             # Cloud credentials
-    r'\.env',             # Environment secrets
-    r'\.bash_history',    # Command history
-    r'/etc/passwd',       # System users
-    r'keychain',          # macOS Keychain
-    r'Cookies'            # Browser cookies
-]
+    def _load_config(self) -> Dict[str, Any]:
+        """Loads firewall rules from the main configuration file."""
+        try:
+            # Try relative to the script's parent (root of the project)
+            root_dir = Path(__file__).parent.parent
+            target_path = root_dir / self.config_path
+            
+            if not target_path.exists():
+                return {}
+                
+            with open(target_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Warning: Failed to load config from {self.config_path} - {e}", file=sys.stderr)
+            return {}
 
-# Sensitive patterns that require explicit approval
-SENSITIVE_PATTERNS = [
-    r'rm\s+',             # Any deletion
-    r'kill\s+',           # Killing processes
-    r'curl\s+.*\s*\|\s*sh', # The "curl to bash" pipe (extremely dangerous)
-    r'wget\s+.*\s*\|\s*sh',
-    r'chmod',             # Permission changes
-    r'chown',
-    r'npm\s+publish'      # Prevent accidental publishing
-]
+    def inspect_command(self, command: str) -> Tuple[str, str]:
+        """
+        Inspects a command against the firewall rules.
+        Returns a tuple of (Status, Message).
+        """
+        # 1. Check Privacy Constraints (Forbidden Paths)
+        for path_pattern in self.forbidden:
+            if re.search(path_pattern, command, re.IGNORECASE):
+                return "BLOCKED", f"Privacy Violation: Access to sensitive path '{path_pattern}' is forbidden."
 
-def check_command(command):
-    # 1. Check for Forbidden Paths (Privacy Shield)
-    for path in FORBIDDEN_PATHS:
-        if re.search(path, command, re.IGNORECASE):
-            return "BLOCKED", f"Privacy Violation: Access to sensitive path '{path}' is forbidden."
+        # 2. Check Hard Bans (Banned Patterns)
+        for pattern in self.banned:
+            if re.search(pattern, command):
+                return "BLOCKED", f"Security Violation: Command matches banned pattern '{pattern}'."
 
-    # 2. Check for Hard Bans
-    for pattern in BANNED_PATTERNS:
-        if re.search(pattern, command):
-            return "BLOCKED", f"Security violation: Command matches banned pattern '{pattern}'"
+        # 3. Check Sensitive Operations (Requires Approval)
+        for pattern in self.sensitive:
+            if re.search(pattern, command):
+                return "PENDING", f"Sensitive Operation: Command matches '{pattern}'. Approval required."
 
-    # 3. Check for Sensitive commands
-    for pattern in SENSITIVE_PATTERNS:
-        if re.search(pattern, command):
-            return "PENDING", f"Sensitive command detected: '{pattern}'. Approval required."
+        return "ALLOWED", "Command is safe to execute."
 
-    # 4. If clean
-    return "ALLOWED", "Command is safe to execute."
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) < 2:
-        print("Usage: python guard.py '<command>'")
+        print("Usage: python3 guard.py '<command>'")
         sys.exit(1)
 
-    cmd_to_test = sys.argv[1]
-    status, message = check_command(cmd_to_test)
+    command = sys.argv[1]
+    guard = FirewallGuard("config.json")
+    status, message = guard.inspect_command(command)
     
     print(f"STATUS: {status}")
     print(f"MESSAGE: {message}")
+    
+    # Exit code based on status
+    if status == "BLOCKED":
+        sys.exit(1)
+    elif status == "PENDING":
+        sys.exit(2)
+    sys.exit(0)
+
+if __name__ == "__main__":
+    main()
