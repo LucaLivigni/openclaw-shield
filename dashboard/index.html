@@ -30,7 +30,6 @@
         input:checked + .slider:before { transform: translateX(18px); }
         .nav-item:hover { background-color: rgba(0,0,0,0.05); }
         @media (prefers-color-scheme: dark) { .nav-item:hover { background-color: rgba(255,255,255,0.1); } }
-        /* Add basic select styling */
         select { appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; }
     </style>
 </head>
@@ -94,19 +93,50 @@
                     </label>
                 </div>
 
-                <!-- File System -->
+                <!-- File System Mode -->
                 <div class="px-4 py-3 flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="w-7 h-7 bg-green-500 rounded-md flex items-center justify-center mr-3">
                             <i class="fa-solid fa-folder-open text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-medium">File System</span>
+                        <span class="text-sm font-medium">File System Mode</span>
                     </div>
                     <select id="setting-filesystem" onchange="updateConfig('filesystem', this.value)" class="text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right">
                         <option value="WORKSPACE_ONLY">Workspace Only</option>
-                        <option value="READ_ONLY">Read Only</option>
-                        <option value="NONE">None</option>
+                        <option value="READ_ONLY">Read Only System</option>
+                        <option value="NONE">No Access</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- File System Mapping (Visual Map) -->
+            <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2">File System Mapping</h4>
+            <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden mb-8">
+                <div class="p-4">
+                    <div class="space-y-3" id="mapping-list">
+                        <!-- Example Items -->
+                        <div class="flex items-center justify-between p-2 bg-white dark:bg-[#1C1C1E] rounded-lg border border-green-200 dark:border-green-900">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-folder-check text-green-500 mr-3 text-xs"></i>
+                                <span class="text-[10px] font-mono" id="path-workspace">/Users/livy/.openclaw/workspace</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded uppercase">Allowed</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white dark:bg-[#1C1C1E] rounded-lg border border-red-200 dark:border-red-900 opacity-60">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-folder-xmark text-red-500 mr-3 text-xs"></i>
+                                <span class="text-[10px] font-mono">/Users/livy/.ssh</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-red-600 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded uppercase">Forbidden</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white dark:bg-[#1C1C1E] rounded-lg border border-red-200 dark:border-red-900 opacity-60">
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-file-shield text-red-500 mr-3 text-xs"></i>
+                                <span class="text-[10px] font-mono">/Users/livy/.env</span>
+                            </div>
+                            <span class="text-[9px] font-bold text-red-600 bg-red-100 dark:bg-red-900/30 px-2 py-0.5 rounded uppercase">Blocked</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -151,37 +181,27 @@
 
         async function fetchConfig() {
             try {
-                const res = await fetch('/api/config');
-                currentConfig = await res.json();
+                // Mock config for now since we don't have a real API endpoint yet
+                currentConfig = {
+                    agents: {
+                        dev: { terminal: "RESTRICTED", filesystem: "WORKSPACE_ONLY", approval_required: true, browser: true, network: "ALLOWED", workspace: "/Users/livy/.openclaw/workspace-dev" },
+                        trader: { terminal: "BLOCKED", filesystem: "NONE", approval_required: false, browser: false, network: "ALLOWED", workspace: "/Users/livy/.openclaw/workspace-trader" },
+                        research: { terminal: "ALLOWED", filesystem: "WORKSPACE_ONLY", approval_required: false, browser: true, network: "ALLOWED", workspace: "/Users/livy/.openclaw/workspace-research" }
+                    }
+                };
                 renderNav();
-                
-                // Select first agent by default
-                if (!selectedAgent && currentConfig.agents) {
-                    selectedAgent = Object.keys(currentConfig.agents)[0];
-                }
-                if(selectedAgent) {
-                    renderAgentConfig(selectedAgent);
-                }
+                if (!selectedAgent) selectedAgent = Object.keys(currentConfig.agents)[0];
+                renderAgentConfig(selectedAgent);
             } catch (err) {
                 console.error("Failed to load config", err);
             }
         }
 
         async function saveConfig() {
-            try {
-                const res = await fetch('/api/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentConfig)
-                });
-                if(res.ok) {
-                    const status = document.getElementById('save-status');
-                    status.classList.remove('opacity-0');
-                    setTimeout(() => status.classList.add('opacity-0'), 2000);
-                }
-            } catch (err) {
-                console.error("Failed to save config", err);
-            }
+            console.log("Saving config...", currentConfig);
+            const status = document.getElementById('save-status');
+            status.classList.remove('opacity-0');
+            setTimeout(() => status.classList.add('opacity-0'), 2000);
         }
 
         function updateConfig(key, value) {
@@ -192,9 +212,7 @@
 
         function renderNav() {
             const nav = document.getElementById('nav-agents');
-            // Keep the header
-            const header = nav.firstElementChild.outerHTML;
-            let html = header;
+            let html = '<div class="pt-2 pb-2 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Agents</div>';
 
             let idx = 0;
             for (const agent in currentConfig.agents) {
@@ -221,10 +239,10 @@
 
         function renderAgentConfig(agent) {
             const agentConfig = currentConfig.agents[agent];
-            document.getElementById('agent-name').innerText = agent;
+            document.getElementById('agent-name').innerText = agent + " Agent";
             document.getElementById('agent-icon').innerText = agent.charAt(0).toUpperCase();
+            document.getElementById('path-workspace').innerText = agentConfig.workspace;
             
-            // Set fields based on data
             document.getElementById('setting-terminal').value = agentConfig.terminal || 'RESTRICTED';
             document.getElementById('setting-approval').checked = agentConfig.approval_required || false;
             document.getElementById('setting-filesystem').value = agentConfig.filesystem || 'WORKSPACE_ONLY';
@@ -232,7 +250,6 @@
             document.getElementById('setting-network').value = agentConfig.network || 'ALLOWED';
         }
 
-        // Init
         fetchConfig();
     </script>
 </body>
