@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw Shield - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .macos-blur { backdrop-filter: blur(20px); background-color: rgba(255, 255, 255, 0.7); }
+        .dark .macos-blur { background-color: rgba(30, 30, 30, 0.7); }
+    </style>
+</head>
+<body class="bg-[#F6F6F6] text-[#333] h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <div class="w-64 bg-[#EBEBEB] border-r border-[#D1D1D1] flex flex-col p-4 space-y-2">
+        <div class="px-2 py-4 mb-4">
+            <h1 class="text-lg font-bold flex items-center">
+                <span class="text-blue-500 mr-2 text-xl">🛡️</span> OpenClaw Shield
+            </h1>
+        </div>
+        
+        <nav class="space-y-1">
+            <a href="#" class="flex items-center px-3 py-1.5 text-sm font-medium bg-blue-500 text-white rounded-md">
+                <i class="fa-solid fa-robot w-6"></i> Agents
+            </a>
+            <a href="#" class="flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md transition-colors">
+                <i class="fa-solid fa-shield-halved w-6"></i> Firewall
+            </a>
+            <a href="#" class="flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md transition-colors">
+                <i class="fa-solid fa-box w-6"></i> Docker Sandbox
+            </a>
+            <div class="pt-4 pb-2 px-3 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Settings</div>
+            <a href="#" class="flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md transition-colors">
+                <i class="fa-solid fa-bell w-6"></i> Notifications
+            </a>
+            <a href="#" class="flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-200 rounded-md transition-colors">
+                <i class="fa-solid fa-key w-6"></i> Secret Vault
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden bg-white">
+        <!-- Header -->
+        <header class="h-12 border-b border-gray-200 flex items-center px-6 justify-between">
+            <h2 class="text-sm font-semibold">Agent Permissions</h2>
+            <div class="flex items-center space-x-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                    <span class="w-2 h-2 mr-1.5 bg-green-500 rounded-full"></span> Hardened Mode Active
+                </span>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full">
+            
+            <!-- Agent Section -->
+            <div class="mb-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 text-xl font-bold">D</div>
+                        <div>
+                            <h3 class="text-lg font-bold">Dev Agent</h3>
+                            <p class="text-sm text-gray-500">Workspace: /Users/livy/.openclaw/workspace-dev</p>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-400">Last Active: 2 mins ago</div>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-200">
+                    <!-- Permission Row 1 -->
+                    <div class="p-4 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center mr-4 text-gray-600">
+                                <i class="fa-solid fa-terminal text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold italic text-gray-800">Terminal Execution (exec)</p>
+                                <p class="text-xs text-gray-500">Allow agent to run shell commands in the sandbox.</p>
+                            </div>
+                        </div>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" name="toggle" id="toggle-exec" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer checked:right-0 checked:border-blue-500" checked/>
+                            <label for="toggle-exec" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                        </div>
+                    </div>
+
+                    <!-- Permission Row 2 -->
+                    <div class="p-4 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center mr-4 text-gray-600">
+                                <i class="fa-solid fa-folder-tree text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold italic text-gray-800">File System Access</p>
+                                <p class="text-xs text-gray-500">Restrict reading/writing only to the workspace folder.</p>
+                            </div>
+                        </div>
+                        <select class="text-xs font-semibold bg-gray-200 px-2 py-1 rounded border-none focus:ring-2 focus:ring-blue-500">
+                            <option>Workspace Only</option>
+                            <option>Home Folder (Read Only)</option>
+                            <option>Full System (Dangerous)</option>
+                        </select>
+                    </div>
+
+                    <!-- Permission Row 3 -->
+                    <div class="p-4 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center mr-4 text-gray-600">
+                                <i class="fa-solid fa-check-to-slot text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold italic text-gray-800">Human-in-the-Loop (Approval)</p>
+                                <p class="text-xs text-gray-500">Require manual confirmation for sensitive commands.</p>
+                            </div>
+                        </div>
+                        <input type="checkbox" class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Log Preview -->
+            <div>
+                <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Security Events Log</h4>
+                <div class="bg-black text-green-400 p-4 rounded-lg font-mono text-xs overflow-x-auto space-y-1">
+                    <p><span class="text-gray-500">[15:10:22]</span> <span class="text-blue-400">DevAgent:</span> exec 'ls -la' -> <span class="text-green-500">ALLOWED</span></p>
+                    <p><span class="text-gray-500">[15:12:45]</span> <span class="text-blue-400">DevAgent:</span> exec 'rm -rf /' -> <span class="text-red-500">BLOCKED (Firewall)</span></p>
+                    <p><span class="text-gray-500">[15:14:01]</span> <span class="text-blue-400">DevAgent:</span> exec 'chmod +x script.sh' -> <span class="text-yellow-500">PENDING (Waiting Approval)</span></p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <style>
+        .toggle-checkbox:checked { right: 0; border-color: #3b82f6; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #3b82f6; }
+        .toggle-checkbox { right: 4px; transition: all 0.3s; border-color: #d1d5db; }
+        .toggle-label { transition: all 0.3s; }
+    </style>
+</body>
+</html>
