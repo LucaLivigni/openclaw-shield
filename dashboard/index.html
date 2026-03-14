@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenClaw Shield - Dashboard</title>
+    <title>OpenClaw Shield</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -12,12 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        macGray: {
-                            light: '#F6F6F6',
-                            sidebar: '#EBEBEB',
-                            dark: '#1E1E1E',
-                            sidebarDark: '#2D2D2D'
-                        }
+                        macGray: { light: '#F6F6F6', sidebar: '#EBEBEB', dark: '#1E1E1E', sidebarDark: '#2D2D2D' }
                     }
                 }
             }
@@ -26,156 +21,98 @@
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .macos-blur { backdrop-filter: blur(20px); }
-        
-        /* Custom Switch Styling */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 22px;
-        }
+        .switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px; width: 18px;
-            left: 2px; bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         input:checked + .slider { background-color: #007AFF; }
+        input:focus + .slider { box-shadow: 0 0 1px #007AFF; }
         input:checked + .slider:before { transform: translateX(18px); }
-
-        /* Sidebar Hover Effect */
         .nav-item:hover { background-color: rgba(0,0,0,0.05); }
-        @media (prefers-color-scheme: dark) {
-            .nav-item:hover { background-color: rgba(255,255,255,0.1); }
-        }
+        @media (prefers-color-scheme: dark) { .nav-item:hover { background-color: rgba(255,255,255,0.1); } }
+        /* Add basic select styling */
+        select { appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; }
     </style>
 </head>
 <body class="bg-macGray-light dark:bg-macGray-dark text-[#333] dark:text-[#E0E0E0] h-screen flex overflow-hidden transition-colors duration-300">
-
-    <!-- Sidebar -->
     <div class="w-64 bg-macGray-sidebar dark:bg-macGray-sidebarDark border-r border-[#D1D1D1] dark:border-[#404040] flex flex-col p-4 space-y-2">
         <div class="px-2 py-4 mb-4">
             <h1 class="text-lg font-bold flex items-center">
-                <span class="text-blue-500 mr-2 text-xl italic">🛡️</span> Shield
+                <span class="text-blue-500 mr-2 text-xl">🛡️</span> Shield
             </h1>
         </div>
-        
-        <div class="relative mb-4">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gray-400 text-xs"></i>
-            <input type="text" placeholder="Search" class="w-full bg-[#DCDCDC] dark:bg-[#3D3D3D] rounded-lg py-1.5 pl-8 pr-3 text-xs focus:outline-none border-none">
-        </div>
-
-        <nav class="space-y-0.5">
-            <a href="#" onclick="showSection('general')" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium bg-blue-500 text-white rounded-md">
-                <i class="fa-solid fa-gear w-6 text-center"></i> General
-            </a>
-            <a href="#" onclick="showSection('firewall')" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors">
-                <i class="fa-solid fa-shield-halved w-6 text-center text-red-500"></i> Firewall
-            </a>
-            <a href="#" onclick="showSection('activity')" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors">
-                <i class="fa-solid fa-chart-line w-6 text-center text-blue-500"></i> Activity Monitor
-            </a>
-            
-            <div class="pt-6 pb-2 px-3 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Agents</div>
-            <a href="#" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors">
-                <div class="w-5 h-5 bg-orange-500 rounded-md mr-3 flex items-center justify-center text-[10px] text-white">D</div>
-                Dev Agent
-            </a>
-            <a href="#" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors">
-                <div class="w-5 h-5 bg-green-600 rounded-md mr-3 flex items-center justify-center text-[10px] text-white">T</div>
-                Trader (Richy)
-            </a>
-            <a href="#" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors">
-                <div class="w-5 h-5 bg-purple-500 rounded-md mr-3 flex items-center justify-center text-[10px] text-white">R</div>
-                Researcher
-            </a>
+        <nav class="space-y-0.5" id="nav-agents">
+            <div class="pt-2 pb-2 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Agents</div>
+            <!-- Populated via JS -->
         </nav>
     </div>
 
-    <!-- Main Content -->
     <div class="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#1E1E1E]">
-        <!-- Header -->
         <header class="h-12 border-b border-gray-200 dark:border-[#404040] flex items-center px-6 justify-between macos-blur">
-            <h2 id="section-title" class="text-sm font-semibold">General Permissions</h2>
+            <h2 id="section-title" class="text-sm font-semibold">Agent Configuration</h2>
             <div class="flex items-center space-x-4">
-                <span class="text-[10px] font-bold text-gray-400">UPTIME: 14h 22m</span>
+                <span id="save-status" class="text-[10px] font-bold text-green-500 opacity-0 transition-opacity">Saved</span>
                 <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
             </div>
         </header>
 
-        <!-- Content Area -->
-        <main id="main-view" class="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full">
-            
-            <!-- Agent Card Style (Apple Style) -->
-            <div class="flex flex-col items-center mb-8">
-                <div class="w-20 h-20 bg-orange-500 rounded-2xl shadow-lg flex items-center justify-center text-white text-4xl font-bold mb-3">D</div>
-                <h3 class="text-xl font-bold">Dev Agent</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Version 2.4.1 • Active Now</p>
+        <main class="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full">
+            <div class="flex flex-col items-center mb-8" id="agent-header">
+                <div id="agent-icon" class="w-20 h-20 bg-orange-500 rounded-2xl shadow-lg flex items-center justify-center text-white text-4xl font-bold mb-3">A</div>
+                <h3 id="agent-name" class="text-xl font-bold capitalize">Agent</h3>
+                <p class="text-xs text-gray-500">Security Configuration</p>
             </div>
 
-            <!-- Permission Group -->
+            <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2">Permissions</h4>
             <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden mb-6">
+                <!-- Terminal Access -->
                 <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-[#3A3A3C]">
                     <div class="flex items-center">
                         <div class="w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center mr-3">
                             <i class="fa-solid fa-terminal text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-medium">Terminal Access (exec)</span>
+                        <span class="text-sm font-medium">Terminal Access</span>
                     </div>
-                    <label class="switch">
-                        <input type="checkbox" checked>
-                        <span class="slider"></span>
-                    </label>
+                    <select id="setting-terminal" onchange="updateConfig('terminal', this.value)" class="text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right">
+                        <option value="ALLOWED">Allowed</option>
+                        <option value="RESTRICTED">Restricted</option>
+                        <option value="BLOCKED">Blocked</option>
+                    </select>
                 </div>
 
+                <!-- Require Approval -->
                 <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-[#3A3A3C]">
                     <div class="flex items-center">
                         <div class="w-7 h-7 bg-yellow-500 rounded-md flex items-center justify-center mr-3">
                             <i class="fa-solid fa-eye text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-medium">Require Approval for all commands</span>
+                        <span class="text-sm font-medium">Require Approval</span>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" checked>
+                        <input type="checkbox" id="setting-approval" onchange="updateConfig('approval_required', this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
 
+                <!-- File System -->
                 <div class="px-4 py-3 flex items-center justify-between">
                     <div class="flex items-center">
                         <div class="w-7 h-7 bg-green-500 rounded-md flex items-center justify-center mr-3">
                             <i class="fa-solid fa-folder-open text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-medium">File System Mode</span>
+                        <span class="text-sm font-medium">File System</span>
                     </div>
-                    <select class="bg-transparent text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right cursor-pointer">
-                        <option>Workspace Only</option>
-                        <option>Read-Only System</option>
-                        <option>Full Access (Danger)</option>
+                    <select id="setting-filesystem" onchange="updateConfig('filesystem', this.value)" class="text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right">
+                        <option value="WORKSPACE_ONLY">Workspace Only</option>
+                        <option value="READ_ONLY">Read Only</option>
+                        <option value="NONE">None</option>
                     </select>
                 </div>
             </div>
 
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 px-2 mb-8">
-                When "Require Approval" is enabled, every terminal command will be sent to your Telegram for confirmation before execution.
-            </p>
-
-            <!-- Dangerous Area -->
-            <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2">Privacy</h4>
-            <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden">
+            <!-- Privacy Group -->
+            <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2">Privacy & Web</h4>
+            <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden mb-8">
                 <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-[#3A3A3C]">
                     <div class="flex items-center">
                         <div class="w-7 h-7 bg-pink-500 rounded-md flex items-center justify-center mr-3">
@@ -184,36 +121,119 @@
                         <span class="text-sm font-medium">Web Browsing (browser)</span>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" checked>
+                        <input type="checkbox" id="setting-browser" onchange="updateConfig('browser', this.checked)">
                         <span class="slider"></span>
                     </label>
                 </div>
+                
                 <div class="px-4 py-3 flex items-center justify-between">
                     <div class="flex items-center">
-                        <div class="w-7 h-7 bg-gray-500 rounded-md flex items-center justify-center mr-3">
-                            <i class="fa-solid fa-microchip text-white text-xs"></i>
+                        <div class="w-7 h-7 bg-purple-500 rounded-md flex items-center justify-center mr-3">
+                            <i class="fa-solid fa-network-wired text-white text-xs"></i>
                         </div>
-                        <span class="text-sm font-medium">Model Priority</span>
+                        <span class="text-sm font-medium">Network Calls</span>
                     </div>
-                    <span class="text-sm text-gray-500">Gemini 3 Flash</span>
+                    <select id="setting-network" onchange="updateConfig('network', this.value)" class="text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right">
+                        <option value="ALLOWED">Allowed</option>
+                        <option value="BLOCKED">Blocked</option>
+                    </select>
                 </div>
             </div>
-
+            
         </main>
     </div>
 
     <script>
-        function showSection(section) {
-            const title = document.getElementById('section-title');
-            if(section === 'activity') {
-                title.innerText = 'Activity Monitor';
-                // Mock for activity view could be added here
-            } else if(section === 'firewall') {
-                title.innerText = 'Firewall Settings';
-            } else {
-                title.innerText = 'General Permissions';
+        let currentConfig = null;
+        let selectedAgent = null;
+
+        const colors = ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-green-600', 'bg-red-500'];
+
+        async function fetchConfig() {
+            try {
+                const res = await fetch('/api/config');
+                currentConfig = await res.json();
+                renderNav();
+                
+                // Select first agent by default
+                if (!selectedAgent && currentConfig.agents) {
+                    selectedAgent = Object.keys(currentConfig.agents)[0];
+                }
+                if(selectedAgent) {
+                    renderAgentConfig(selectedAgent);
+                }
+            } catch (err) {
+                console.error("Failed to load config", err);
             }
         }
+
+        async function saveConfig() {
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentConfig)
+                });
+                if(res.ok) {
+                    const status = document.getElementById('save-status');
+                    status.classList.remove('opacity-0');
+                    setTimeout(() => status.classList.add('opacity-0'), 2000);
+                }
+            } catch (err) {
+                console.error("Failed to save config", err);
+            }
+        }
+
+        function updateConfig(key, value) {
+            if(!currentConfig || !selectedAgent) return;
+            currentConfig.agents[selectedAgent][key] = value;
+            saveConfig();
+        }
+
+        function renderNav() {
+            const nav = document.getElementById('nav-agents');
+            // Keep the header
+            const header = nav.firstElementChild.outerHTML;
+            let html = header;
+
+            let idx = 0;
+            for (const agent in currentConfig.agents) {
+                const color = colors[idx % colors.length];
+                const initial = agent.charAt(0).toUpperCase();
+                const isActive = agent === selectedAgent;
+                const bgClass = isActive ? 'bg-blue-500 text-white' : '';
+                
+                html += `
+                <a href="#" onclick="selectAgent('${agent}')" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${bgClass}">
+                    <div class="w-5 h-5 ${color} rounded-md mr-3 flex items-center justify-center text-[10px] text-white">${initial}</div>
+                    <span class="capitalize">${agent}</span>
+                </a>`;
+                idx++;
+            }
+            nav.innerHTML = html;
+        }
+
+        function selectAgent(agent) {
+            selectedAgent = agent;
+            renderNav();
+            renderAgentConfig(agent);
+        }
+
+        function renderAgentConfig(agent) {
+            const agentConfig = currentConfig.agents[agent];
+            document.getElementById('agent-name').innerText = agent;
+            document.getElementById('agent-icon').innerText = agent.charAt(0).toUpperCase();
+            
+            // Set fields based on data
+            document.getElementById('setting-terminal').value = agentConfig.terminal || 'RESTRICTED';
+            document.getElementById('setting-approval').checked = agentConfig.approval_required || false;
+            document.getElementById('setting-filesystem').value = agentConfig.filesystem || 'WORKSPACE_ONLY';
+            document.getElementById('setting-browser').checked = agentConfig.browser || false;
+            document.getElementById('setting-network').value = agentConfig.network || 'ALLOWED';
+        }
+
+        // Init
+        fetchConfig();
     </script>
 </body>
 </html>
