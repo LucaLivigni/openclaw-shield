@@ -10,11 +10,7 @@
         tailwind.config = {
             darkMode: 'media',
             theme: {
-                extend: {
-                    colors: {
-                        macGray: { light: '#F6F6F6', sidebar: '#EBEBEB', dark: '#1E1E1E', sidebarDark: '#2D2D2D' }
-                    }
-                }
+                extend: { colors: { macGray: { light: '#F6F6F6', sidebar: '#EBEBEB', dark: '#1E1E1E', sidebarDark: '#2D2D2D' } } }
             }
         }
     </script>
@@ -26,7 +22,6 @@
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         input:checked + .slider { background-color: #007AFF; }
-        input:focus + .slider { box-shadow: 0 0 1px #007AFF; }
         input:checked + .slider:before { transform: translateX(18px); }
         .nav-item:hover { background-color: rgba(0,0,0,0.05); }
         @media (prefers-color-scheme: dark) { .nav-item:hover { background-color: rgba(255,255,255,0.1); } }
@@ -38,17 +33,17 @@
 <body class="bg-macGray-light dark:bg-macGray-dark text-[#333] dark:text-[#E0E0E0] h-screen flex overflow-hidden transition-colors duration-300">
     <div class="w-64 bg-macGray-sidebar dark:bg-macGray-sidebarDark border-r border-[#D1D1D1] dark:border-[#404040] flex flex-col p-4 space-y-2">
         <div class="px-2 py-4 mb-4">
-            <h1 class="text-lg font-bold flex items-center">
-                <span class="text-blue-500 mr-2 text-xl">🛡️</span> Shield
-            </h1>
+            <h1 class="text-lg font-bold flex items-center"><span class="text-blue-500 mr-2 text-xl">🛡️</span> Shield</h1>
         </div>
         <nav class="space-y-0.5" id="nav-agents">
             <div class="pt-2 pb-2 px-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Agents</div>
-            <!-- Populated via JS -->
         </nav>
         <div class="mt-8">
             <a href="#" onclick="showFs()" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-gray-700 dark:text-gray-300">
                 <i class="fa-solid fa-folder-tree w-5 mr-3 text-center text-gray-500"></i> File System
+            </a>
+            <a href="#" onclick="showNetwork()" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors text-gray-700 dark:text-gray-300 mt-2">
+                <i class="fa-solid fa-satellite-dish w-5 mr-3 text-center text-gray-500"></i> Network Monitor
             </a>
         </div>
     </div>
@@ -57,13 +52,13 @@
         <header class="h-12 border-b border-gray-200 dark:border-[#404040] flex items-center px-6 justify-between macos-blur">
             <h2 id="section-title" class="text-sm font-semibold">Agent Configuration</h2>
             <div class="flex items-center space-x-4">
+                <button onclick="rollbackWorkspace()" class="text-xs font-semibold bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 transition-colors hidden" id="rollback-btn"><i class="fa-solid fa-rotate-left mr-1"></i> Rollback Snapshot</button>
                 <span id="save-status" class="text-[10px] font-bold text-green-500 opacity-0 transition-opacity">Saved</span>
                 <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
             </div>
         </header>
 
         <main id="main-content" class="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full">
-            <!-- Agent Config View -->
             <div id="agent-view">
                 <div class="flex flex-col items-center mb-8" id="agent-header">
                     <div id="agent-icon" class="w-20 h-20 bg-orange-500 rounded-2xl shadow-lg flex items-center justify-center text-white text-4xl font-bold mb-3">A</div>
@@ -71,81 +66,62 @@
                     <p class="text-xs text-gray-500">Security Configuration</p>
                 </div>
 
-                <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2">Permissions</h4>
+                <div class="flex justify-between items-center px-2 mb-2">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase">Permissions</h4>
+                    <button onclick="grantTempPerms()" class="text-xs font-semibold text-blue-500 hover:text-blue-600">Elevate for 15m</button>
+                </div>
+                
                 <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden mb-6">
                     <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-[#3A3A3C]">
                         <div class="flex items-center">
-                            <div class="w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center mr-3">
-                                <i class="fa-solid fa-terminal text-white text-xs"></i>
-                            </div>
+                            <div class="w-7 h-7 bg-blue-500 rounded-md flex items-center justify-center mr-3"><i class="fa-solid fa-terminal text-white text-xs"></i></div>
                             <span class="text-sm font-medium">Terminal Access</span>
                         </div>
                         <select id="setting-terminal" onchange="updateConfig('terminal', this.value)" class="text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right">
-                            <option value="ALLOWED">Allowed</option>
-                            <option value="RESTRICTED">Restricted</option>
-                            <option value="BLOCKED">Blocked</option>
+                            <option value="ALLOWED">Allowed</option><option value="RESTRICTED">Restricted</option><option value="BLOCKED">Blocked</option>
                         </select>
                     </div>
 
                     <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-[#3A3A3C]">
                         <div class="flex items-center">
-                            <div class="w-7 h-7 bg-yellow-500 rounded-md flex items-center justify-center mr-3">
-                                <i class="fa-solid fa-eye text-white text-xs"></i>
-                            </div>
+                            <div class="w-7 h-7 bg-yellow-500 rounded-md flex items-center justify-center mr-3"><i class="fa-solid fa-eye text-white text-xs"></i></div>
                             <span class="text-sm font-medium">Require Approval</span>
                         </div>
-                        <label class="switch">
-                            <input type="checkbox" id="setting-approval" onchange="updateConfig('approval_required', this.checked)">
-                            <span class="slider"></span>
-                        </label>
+                        <label class="switch"><input type="checkbox" id="setting-approval" onchange="updateConfig('approval_required', this.checked)"><span class="slider"></span></label>
                     </div>
 
                     <div class="px-4 py-3 flex items-center justify-between">
                         <div class="flex items-center">
-                            <div class="w-7 h-7 bg-green-500 rounded-md flex items-center justify-center mr-3">
-                                <i class="fa-solid fa-folder-open text-white text-xs"></i>
-                            </div>
+                            <div class="w-7 h-7 bg-green-500 rounded-md flex items-center justify-center mr-3"><i class="fa-solid fa-folder-open text-white text-xs"></i></div>
                             <span class="text-sm font-medium">File System</span>
                         </div>
                         <select id="setting-filesystem" onchange="updateConfig('filesystem', this.value)" class="text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right">
-                            <option value="WORKSPACE_ONLY">Workspace Only</option>
-                            <option value="READ_ONLY">Read Only</option>
-                            <option value="NONE">None</option>
+                            <option value="WORKSPACE_ONLY">Workspace Only</option><option value="READ_ONLY">Read Only</option><option value="NONE">None</option>
                         </select>
                     </div>
                 </div>
 
-                <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2">Privacy & Web</h4>
+                <div class="flex justify-between items-center px-2 mb-2">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase">Privacy & Notifications</h4>
+                </div>
                 <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden mb-8">
                     <div class="px-4 py-3 flex items-center justify-between border-b border-gray-200 dark:border-[#3A3A3C]">
                         <div class="flex items-center">
-                            <div class="w-7 h-7 bg-pink-500 rounded-md flex items-center justify-center mr-3">
-                                <i class="fa-solid fa-earth-americas text-white text-xs"></i>
-                            </div>
-                            <span class="text-sm font-medium">Web Browsing (browser)</span>
+                            <div class="w-7 h-7 bg-purple-500 rounded-md flex items-center justify-center mr-3"><i class="fa-solid fa-bell text-white text-xs"></i></div>
+                            <span class="text-sm font-medium">Push Notifications (Opt-in)</span>
                         </div>
-                        <label class="switch">
-                            <input type="checkbox" id="setting-browser" onchange="updateConfig('browser', this.checked)">
-                            <span class="slider"></span>
-                        </label>
+                        <label class="switch"><input type="checkbox" id="setting-notifications" onchange="updateConfig('notifications_enabled', this.checked)"><span class="slider"></span></label>
                     </div>
-                    
                     <div class="px-4 py-3 flex items-center justify-between">
                         <div class="flex items-center">
-                            <div class="w-7 h-7 bg-purple-500 rounded-md flex items-center justify-center mr-3">
-                                <i class="fa-solid fa-network-wired text-white text-xs"></i>
-                            </div>
-                            <span class="text-sm font-medium">Network Calls</span>
+                            <div class="w-7 h-7 bg-pink-500 rounded-md flex items-center justify-center mr-3"><i class="fa-solid fa-earth-americas text-white text-xs"></i></div>
+                            <span class="text-sm font-medium">Web Browsing</span>
                         </div>
-                        <select id="setting-network" onchange="updateConfig('network', this.value)" class="text-sm text-gray-500 dark:text-gray-400 focus:outline-none text-right">
-                            <option value="ALLOWED">Allowed</option>
-                            <option value="BLOCKED">Blocked</option>
-                        </select>
+                        <label class="switch"><input type="checkbox" id="setting-browser" onchange="updateConfig('browser', this.checked)"><span class="slider"></span></label>
                     </div>
                 </div>
             </div>
 
-            <!-- FS View -->
             <div id="fs-view" class="hidden">
                 <h3 class="text-xl font-bold mb-4">Workspace File System</h3>
                 <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl p-4 overflow-x-auto text-sm">
@@ -153,13 +129,31 @@
                 </div>
             </div>
 
+            <div id="network-view" class="hidden">
+                <h3 class="text-xl font-bold mb-4 flex items-center"><i class="fa-solid fa-satellite-dish mr-2 text-blue-500"></i> Network Monitor</h3>
+                <div class="bg-[#F2F2F7] dark:bg-[#2C2C2E] rounded-xl overflow-hidden text-sm">
+                    <div class="px-4 py-3 border-b border-gray-200 dark:border-[#3A3A3C] flex justify-between items-center">
+                        <span class="font-bold text-gray-500">Destination</span>
+                        <span class="font-bold text-gray-500">Status</span>
+                    </div>
+                    <!-- Mock Data for visual layout as requested -->
+                    <div class="px-4 py-3 flex justify-between items-center border-b border-gray-200 dark:border-[#3A3A3C]">
+                        <span class="font-mono">api.github.com:443</span>
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-bold">ALLOWLISTED</span>
+                    </div>
+                    <div class="px-4 py-3 flex justify-between items-center bg-red-50 dark:bg-red-900/20">
+                        <span class="font-mono text-red-600 dark:text-red-400">182.44.32.11:80 (Unknown)</span>
+                        <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded font-bold">BLOCKED</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-4 px-2">Unrecognized outbound connections are intercepted by the docker sandbox firewall.</p>
+            </div>
         </main>
     </div>
 
     <script>
         let currentConfig = null;
         let selectedAgent = null;
-
         const colors = ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-green-600', 'bg-red-500'];
 
         async function fetchConfig() {
@@ -167,16 +161,11 @@
                 const res = await fetch('/api/config');
                 currentConfig = await res.json();
                 renderNav();
-                
                 if (!selectedAgent && currentConfig.agents) {
                     selectedAgent = Object.keys(currentConfig.agents)[0];
                 }
-                if(selectedAgent) {
-                    renderAgentConfig(selectedAgent);
-                }
-            } catch (err) {
-                console.error("Failed to load config", err);
-            }
+                if(selectedAgent) renderAgentConfig(selectedAgent);
+            } catch (err) { console.error("Failed to load config", err); }
         }
 
         async function fetchFs() {
@@ -184,9 +173,7 @@
                 const res = await fetch('/api/fs');
                 const tree = await res.json();
                 document.getElementById('fs-tree').innerHTML = renderFsTree(tree);
-            } catch (err) {
-                document.getElementById('fs-tree').innerText = "Failed to load file system map.";
-            }
+            } catch (err) { document.getElementById('fs-tree').innerText = "Failed to load file system map."; }
         }
 
         function renderFsTree(node) {
@@ -196,14 +183,10 @@
                 html += `<i class="fa-solid fa-folder text-blue-400 mr-2"></i> <strong>${node.name}</strong></div>`;
                 if (node.children && node.children.length > 0) {
                     html += `<div class="fs-item">`;
-                    node.children.forEach(child => {
-                        html += renderFsTree(child);
-                    });
+                    node.children.forEach(child => { html += renderFsTree(child); });
                     html += `</div>`;
                 }
-            } else {
-                html += `<i class="fa-regular fa-file text-gray-400 mr-2"></i> <span>${node.name}</span></div>`;
-            }
+            } else { html += `<i class="fa-regular fa-file text-gray-400 mr-2"></i> <span>${node.name}</span></div>`; }
             return html;
         }
 
@@ -219,9 +202,16 @@
                     status.classList.remove('opacity-0');
                     setTimeout(() => status.classList.add('opacity-0'), 2000);
                 }
-            } catch (err) {
-                console.error("Failed to save config", err);
-            }
+            } catch (err) { console.error("Failed to save config", err); }
+        }
+
+        async function rollbackWorkspace() {
+            if(!confirm("Are you sure you want to rollback the workspace to the last snapshot?")) return;
+            try {
+                const res = await fetch('/api/rollback', { method: 'POST' });
+                if(res.ok) { alert("Rollback successful. Workspace restored."); }
+                else { alert("Rollback failed."); }
+            } catch (err) { alert("Rollback request failed."); }
         }
 
         function updateConfig(key, value) {
@@ -230,56 +220,75 @@
             saveConfig();
         }
 
+        function grantTempPerms() {
+            if(!currentConfig || !selectedAgent) return;
+            const expTime = (Date.now() / 1000) + (15 * 60); // 15 mins
+            currentConfig.agents[selectedAgent].terminal = "ALLOWED";
+            currentConfig.agents[selectedAgent].approval_required = false;
+            
+            if(!currentConfig.agents[selectedAgent].expirations) currentConfig.agents[selectedAgent].expirations = {};
+            currentConfig.agents[selectedAgent].expirations.terminal = expTime;
+            currentConfig.agents[selectedAgent].expirations.approval_required = expTime;
+            
+            saveConfig();
+            renderAgentConfig(selectedAgent);
+            alert("Elevated permissions granted for 15 minutes.");
+        }
+
         function renderNav() {
             const nav = document.getElementById('nav-agents');
             const header = nav.firstElementChild.outerHTML;
             let html = header;
-
             let idx = 0;
             for (const agent in currentConfig.agents) {
                 const color = colors[idx % colors.length];
                 const initial = agent.charAt(0).toUpperCase();
-                const isActive = agent === selectedAgent;
+                const isActive = agent === selectedAgent && !document.getElementById('agent-view').classList.contains('hidden');
                 const bgClass = isActive ? 'bg-blue-500 text-white' : '';
-                
-                html += `
-                <a href="#" onclick="selectAgent('${agent}')" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${bgClass}">
+                html += `<a href="#" onclick="selectAgent('${agent}')" class="nav-item flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${bgClass}">
                     <div class="w-5 h-5 ${color} rounded-md mr-3 flex items-center justify-center text-[10px] text-white">${initial}</div>
-                    <span class="capitalize">${agent}</span>
-                </a>`;
+                    <span class="capitalize">${agent}</span></a>`;
                 idx++;
             }
             nav.innerHTML = html;
         }
 
+        function switchView(viewId, title) {
+            ['agent-view', 'fs-view', 'network-view'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+            document.getElementById('section-title').innerText = title;
+            document.getElementById('rollback-btn').classList.remove('hidden');
+            renderNav();
+        }
+
         function selectAgent(agent) {
             selectedAgent = agent;
-            document.getElementById('agent-view').classList.remove('hidden');
-            document.getElementById('fs-view').classList.add('hidden');
-            document.getElementById('section-title').innerText = 'Agent Configuration';
-            renderNav();
+            switchView('agent-view', 'Agent Configuration');
             renderAgentConfig(agent);
         }
 
         function showFs() {
             selectedAgent = null;
-            document.getElementById('agent-view').classList.add('hidden');
-            document.getElementById('fs-view').classList.remove('hidden');
-            document.getElementById('section-title').innerText = 'File System Map';
-            renderNav();
+            switchView('fs-view', 'File System Map');
             fetchFs();
         }
 
+        function showNetwork() {
+            selectedAgent = null;
+            switchView('network-view', 'Network Firewall');
+        }
+
         function renderAgentConfig(agent) {
-            const agentConfig = currentConfig.agents[agent];
+            const c = currentConfig.agents[agent];
             document.getElementById('agent-name').innerText = agent;
             document.getElementById('agent-icon').innerText = agent.charAt(0).toUpperCase();
-            
-            document.getElementById('setting-terminal').value = agentConfig.terminal || 'RESTRICTED';
-            document.getElementById('setting-approval').checked = agentConfig.approval_required || false;
-            document.getElementById('setting-filesystem').value = agentConfig.filesystem || 'WORKSPACE_ONLY';
-            document.getElementById('setting-browser').checked = agentConfig.browser || false;
-            document.getElementById('setting-network').value = agentConfig.network || 'ALLOWED';
+            document.getElementById('setting-terminal').value = c.terminal || 'RESTRICTED';
+            document.getElementById('setting-approval').checked = c.approval_required || false;
+            document.getElementById('setting-filesystem').value = c.filesystem || 'WORKSPACE_ONLY';
+            document.getElementById('setting-browser').checked = c.browser || false;
+            document.getElementById('setting-notifications').checked = c.notifications_enabled || false;
         }
 
         fetchConfig();
