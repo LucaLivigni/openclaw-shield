@@ -13,28 +13,45 @@ BANNED_PATTERNS = [
     r'reboot'             # System reboot
 ]
 
+# Privacy Shield: Paths that agents should NEVER read or write
+FORBIDDEN_PATHS = [
+    r'\.ssh',             # SSH keys
+    r'\.aws',             # Cloud credentials
+    r'\.env',             # Environment secrets
+    r'\.bash_history',    # Command history
+    r'/etc/passwd',       # System users
+    r'keychain',          # macOS Keychain
+    r'Cookies'            # Browser cookies
+]
+
 # Sensitive patterns that require explicit approval
 SENSITIVE_PATTERNS = [
     r'rm\s+',             # Any deletion
     r'kill\s+',           # Killing processes
-    r'curl\s+',           # External downloads
-    r'wget\s+',
+    r'curl\s+.*\s*\|\s*sh', # The "curl to bash" pipe (extremely dangerous)
+    r'wget\s+.*\s*\|\s*sh',
     r'chmod',             # Permission changes
-    r'chown'
+    r'chown',
+    r'npm\s+publish'      # Prevent accidental publishing
 ]
 
 def check_command(command):
-    # 1. Check for Hard Bans
+    # 1. Check for Forbidden Paths (Privacy Shield)
+    for path in FORBIDDEN_PATHS:
+        if re.search(path, command, re.IGNORECASE):
+            return "BLOCKED", f"Privacy Violation: Access to sensitive path '{path}' is forbidden."
+
+    # 2. Check for Hard Bans
     for pattern in BANNED_PATTERNS:
         if re.search(pattern, command):
             return "BLOCKED", f"Security violation: Command matches banned pattern '{pattern}'"
 
-    # 2. Check for Sensitive commands
+    # 3. Check for Sensitive commands
     for pattern in SENSITIVE_PATTERNS:
         if re.search(pattern, command):
             return "PENDING", f"Sensitive command detected: '{pattern}'. Approval required."
 
-    # 3. If clean
+    # 4. If clean
     return "ALLOWED", "Command is safe to execute."
 
 if __name__ == "__main__":
