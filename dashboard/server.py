@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 OpenClaw Shield - Dashboard Server
-Dependency-free HTTP Server to manage config.json and serve the UI.
+Dependency-free HTTP Server to manage config.json, serve the UI, and map the file system.
 """
 
 import json
@@ -13,6 +13,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 CONFIG_PATH = BASE_DIR / "config.json"
 DASHBOARD_DIR = BASE_DIR / "dashboard"
+WORKSPACE_DIR = Path(os.environ.get("HOME", "/tmp")) / ".openclaw" / "workspace-dev"
 
 class ShieldHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -29,8 +30,16 @@ class ShieldHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(config_data.encode('utf-8'))
             except Exception as e:
                 self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+        elif self.path == '/api/fs':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            try:
+                tree = self._build_tree(WORKSPACE_DIR)
+                self.wfile.write(json.dumps(tree).encode('utf-8'))
+            except Exception as e:
+                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
         else:
-            # Serve static files (index.html)
             if self.path == '/':
                 self.path = '/index.html'
             return super().do_GET()
@@ -56,6 +65,17 @@ class ShieldHandler(SimpleHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
+
+    def _build_tree(self, path: Path):
+        name = path.name
+        if path.is_dir():
+            try:
+                children = [self._build_tree(child) for child in path.iterdir() if not child.name.startswith('.')]
+                return {"name": name, "type": "directory", "children": children}
+            except PermissionError:
+                return {"name": name, "type": "directory", "children": []}
+        else:
+            return {"name": name, "type": "file"}
 
 def run(server_class=HTTPServer, handler_class=ShieldHandler, port=8000):
     server_address = ('', port)
