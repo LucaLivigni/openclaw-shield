@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  openclaw:
+    image: node:24-slim
+    container_name: openclaw-shield-sandbox
+    volumes:
+      - ./workspace:/app/workspace
+      - ./config:/app/config
+    environment:
+      - NODE_ENV=production
+    networks:
+      - shield-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+
+  shield-dashboard:
+    image: python:3.9-slim
+    container_name: shield-ui
+    ports:
+      - "8080:80"
+    volumes:
+      - ./dashboard:/usr/share/nginx/html
+    networks:
+      - shield-network
+
+networks:
+  shield-network:
+    driver: bridge
